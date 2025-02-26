@@ -29,6 +29,7 @@ import {Editor} from './wrapper';
 import * as Configuration from './configuration';
 import * as Options from './options';
 
+// eslint-disable-next-line no-async-promise-executor
 export default new Promise(async(resolve) => {
     const bseditor = new Editor();
     const [

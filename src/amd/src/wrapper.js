@@ -25,33 +25,38 @@ import {getFilePicker} from 'editor_tiny/options';
 export class Editor {
 
 
-       COMPONENTNAME= 'tiny_recittakepicture'
-       stream= null
+       COMPONENTNAME = 'tiny_recittakepicture';
+       stream = null;
 
-       accessGranted= true
-       streamOptions= {video: { width: { min: 64, ideal: 1920 }, height: { min: 40, ideal: 1080 }}}
-       devices= []
-       cur_devices= 0
-       shotBlob= ''
-       cropper= null
-       dialogue = null
+       accessGranted = true;
+       streamOptions = {video: {width: {min: 64, ideal: 1920}, height: {min: 40, ideal: 1080}}};
+       devices = [];
+       cur_devices = 0;
+       shotBlob = '';
+       cropper = null;
+       dialogue = null;
 
-    open(editor){
+    open(editor) {
         this.editor = editor;
         
                 
-        if (navigator.permissions){
-            navigator.permissions.query({name: "camera"}).then(function(state){ 
-                if (state == 'prompt') this.accessGranted = false; 
+        if (navigator.permissions) {
+            navigator.permissions.query({name: "camera"}).then(function(state) { 
+                if (state == 'prompt') {
+                    this.accessGranted = false; 
+                }
             });
         }
         
-        var src = M.cfg.wwwroot +'/lib/editor/tiny/plugins/recittakepicture/js/cropper.js';
+        var src = M.cfg.wwwroot + '/lib/editor/tiny/plugins/recittakepicture/js/cropper.js';
         var that = this;
+
+        /*global requirejs*/
+        /*eslint no-undef: ["error", { "typeof": true }] */
         requirejs([src], function(app) {
             that.cropper = app;
         });
-        if (!this.accessGranted){
+        if (!this.accessGranted) {
             alert(M.util.get_string('grantaccess', this.COMPONENTNAME));
             navigator.mediaDevices.getUserMedia({video:true});
             return;
@@ -59,25 +64,30 @@ export class Editor {
         
         var content = '' +
             '<form id="atto_recittakepicture_dialogue" class="recittakepicture">' +
-                '<div class="camera" id="'+this.COMPONENTNAME+'camera"><div style="margin:auto">' +
-                    '<button id="'+this.COMPONENTNAME+'close" class="closebtn"><i class="fa fa-times-circle"></i></button>' +
-                    '<video id="'+this.COMPONENTNAME+'video" autoplay playsinline></video>' +
-                    '<div class="livevideo-controls"><div class="video-options"><button class="btn btn-secondary"><i class="fa fa-repeat"></i></button>' +
-                    '<div class="container-circles" id="'+this.COMPONENTNAME+'startbutton"><div class="outer-circle"><div class="inner-circle"></div></div></div></div></div>' +
+                '<div class="camera" id="' + this.COMPONENTNAME + 'camera"><div style="margin:auto">' +
+                    '<button id="' + this.COMPONENTNAME + 'close" class="closebtn"><i class="fa fa-times-circle"></i></button>' +
+                    '<video id="' + this.COMPONENTNAME + 'video" autoplay playsinline></video>' +
+                    '<div class="livevideo-controls">' + 
+                    '<div class="video-options"><button class="btn btn-secondary"><i class="fa fa-repeat"></i></button>' +
+                    '<div class="container-circles" id="' + this.COMPONENTNAME + 'startbutton">' + 
+                    '<div class="outer-circle"><div class="inner-circle"></div></div></div></div></div>' +
                 '</div></div>' +
-                '<canvas id="'+this.COMPONENTNAME+'canvas" style="display:none"></canvas>' +
+                '<canvas id="' + this.COMPONENTNAME + 'canvas" style="display:none"></canvas>' +
                 '<div class="camoutput">' +
                     '<div class="preview"></div>' +
-                    '<img id="'+this.COMPONENTNAME+'photo" width="'+( window.innerWidth * 0.8)+'" height="'+( window.innerHeight * 0.8)+'" alt="capture">' +
-                    '<div class="video-controls"><button id="'+this.COMPONENTNAME+'returnbutton" class="btn btn-secondary">'+M.util.get_string('back', this.COMPONENTNAME)+'</button>' +
-                    '<button class="btn btn-primary" id="'+this.COMPONENTNAME+'submit" disabled> '+M.util.get_string('saveimage', this.COMPONENTNAME)+'</button></div>' +
+                    '<img id="' + this.COMPONENTNAME + 'photo" width="' + (window.innerWidth * 0.8) + '" ' +
+                    'height="' + (window.innerHeight * 0.8) + '" alt="capture">' +
+                    '<div class="video-controls"><button id="' + this.COMPONENTNAME + 'returnbutton" class="btn btn-secondary">' + 
+                    M.util.get_string('back', this.COMPONENTNAME) + '</button>' +
+                    '<button class="btn btn-primary" id="' + this.COMPONENTNAME + 'submit" disabled> ' + 
+                    M.util.get_string('saveimage', this.COMPONENTNAME) + '</button></div>' +
                 '</div>' +
             '</form>';
         this.dialogue = this.createPopup(content);
         
         // Apple bug: hide Safari navbar so users can see buttons
         if (navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPad/i)) {
-            /* iOS hides Safari address bar */
+            // iOS hides Safari address bar 
             window.scrollTo(0, 1);
         }
 
@@ -90,9 +100,8 @@ export class Editor {
         var returnbutton = document.getElementById(this.COMPONENTNAME+'returnbutton');
         var submitbutton = document.getElementById(this.COMPONENTNAME+'submit');
         var photodata = '';
-        var that = this;
 
-        //Generate white preview
+        // Generate white preview
         var context = canvas.getContext('2d');
         context.fillStyle = "#AAA";
         context.fillRect(0, 0, canvas.width, canvas.height);
@@ -110,7 +119,7 @@ export class Editor {
                 photo.parentElement.style.display = "none";
                 submitbutton.disabled = true;
                 return;
-            }else{
+            } else {
                 camera.style.display = "none";
                 photo.parentElement.style.display = "block";
             }
@@ -118,18 +127,18 @@ export class Editor {
             canvas.height = video.videoHeight;
             context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
             
-            if (typeof ImageCapture !== 'undefined'){
+            if (typeof ImageCapture !== 'undefined') {
                 const mediaStreamTrack = video.srcObject.getVideoTracks()[0];
                 const imageCapture = new ImageCapture(mediaStreamTrack);
-                imageCapture.grabFrame().then(function(img){
-                    that.bmpToBlob(img, function(blob){
+                imageCapture.grabFrame().then(function(img) {
+                    that.bmpToBlob(img, function(blob) {
                         that.shotBlob = blob;
-                    })
+                    });
                 });
             }
     
             photodata = canvas.toDataURL('image/png');
-            if (that.shotBlob){
+            if (that.shotBlob) {
                 photodata = URL.createObjectURL(that.shotBlob);
             }
             photo.setAttribute('src', photodata);
@@ -144,7 +153,9 @@ export class Editor {
             camera.style.display = "block";
             photo.parentElement.style.display = "none";
             submitbutton.disabled = true;
-            if (that.cropperEl) that.cropperEl.destroy();
+            if (that.cropperEl) {
+                that.cropperEl.destroy();
+            } 
             that.shotBlob = null;
             that.cropperEl = null;
         });
@@ -162,7 +173,7 @@ export class Editor {
             submitbutton.innerHTML = '<i class=\'fa fa-spinner fa-spin\'></i>';
             returnbutton.disabled = true;
 
-            setTimeout(function(){
+            setTimeout(function() {
                 // Convert it to a blob to upload
                 var canvas = that.cropperEl.getCroppedCanvas({
                     maxHeight: 2000
@@ -219,22 +230,24 @@ export class Editor {
         document.body.appendChild(this.backdrop);
     }
 
-    destroy(){
+    destroy() {
         this.popup.classList.remove('show');
         this.backdrop.classList.remove('show');
         this.popup.remove();
         this.backdrop.remove();
 
-        if(this.appReact){
+        if (this.appReact) {
             this.appReact.unmount();
         }
     }
 
 
-    initCropper(){
-        if (this.cropperEl) this.cropperEl.destroy();
+    initCropper() {
+        if (this.cropperEl) {
+            this.cropperEl.destroy();
+        } 
         
-        var photo = document.getElementById(this.COMPONENTNAME+'photo');
+        var photo = document.getElementById(this.COMPONENTNAME + 'photo');
 
         this.cropperEl = new this.cropper(photo, {
         aspectRatio: 0,
@@ -243,7 +256,7 @@ export class Editor {
         });
     }
 
-    loadCameraDevices(){
+    loadCameraDevices() {
         if ('mediaDevices' in navigator && navigator.mediaDevices.getUserMedia) {
             var that = this;
             navigator.mediaDevices.enumerateDevices().then(function(devices){
@@ -262,12 +275,12 @@ export class Editor {
         }
     }
 
-    initChangeDevice(){
+    initChangeDevice() {
         var that = this;
         var btn = document.querySelector('.video-options>button');
-        btn.addEventListener('click', function(ev){
+        btn.addEventListener('click', function(ev) {
             ev.preventDefault();
-            if (that.devices.length == that.cur_devices){
+            if (that.devices.length == that.cur_devices) {
                 that.cur_devices = 0;
             }
             var dev = that.devices[that.cur_devices];
@@ -276,19 +289,21 @@ export class Editor {
             that.startStream();
         });
 
-        window.addEventListener("orientationchange", function(event) {
-            if (!that.cropperEl) return;
+        window.addEventListener("orientationchange", function() {
+            if (!that.cropperEl) {
+                return;
+            }
             that.initCropper();
         });
     }
 
-    startStream(){
+    startStream() {
         // access video stream from webcam
         var video = document.getElementById(this.COMPONENTNAME+'video');
         var that = this;
         that.stopStream();
         
-        if(navigator && navigator.mediaDevices){
+        if(navigator && navigator.mediaDevices) {
             navigator.mediaDevices.getUserMedia(that.streamOptions)
             // on success, stream it in video tag
             .then(function(stream) {
@@ -307,9 +322,9 @@ export class Editor {
         }
     }
 
-    stopStream(){
-        if (this.stream){
-            this.stream.getTracks().forEach(function(t){ t.stop()});
+    stopStream() {
+        if (this.stream) {
+            this.stream.getTracks().forEach(function(t) { t.stop(); });
         }
     }
 
@@ -369,8 +384,6 @@ export class Editor {
         var options = this.getFileTransferData(),
             savepath = (options.savepath === undefined) ? '/' : options.savepath,
             formData = new FormData(),
-            timestamp = 0,
-            uploadid = "",
             xhr = new XMLHttpRequest();
 
         formData.append('repo_upload_file', fileToSave);
@@ -392,51 +405,51 @@ export class Editor {
                 if (xhr.status === 200) {
                     result = JSON.parse(xhr.responseText);
                     if (result) {
-                        if (result.error) 
+                        if (result.error) {
                             throw new M.core.ajaxException(result);
-                        }
-
-                        file = result;
-                        if (result.event && result.event === 'fileexists') {
-                            // A file with this name is already in use here - rename to avoid conflict.
-                            // Chances are, it's a different image (stored in a different folder on the user's computer).
-                            // If the user wants to reuse an existing image, they can copy/paste it within the editor.
-                            file = result.newfile;
-                        }
-
-                        // Replace placeholder with actual image.
-                        newhtml = '<img class="w-100" src="'+file.url+'"/>';
-                        self.editor.execCommand('mceInsertContent', false, newhtml);
-                        self.destroy();
+                        } 
                     }
-                } else {
-                     //alert(M.util.get_string('servererror', 'moodle'));
+
+                    file = result;
+                    if (result.event && result.event === 'fileexists') {
+                        // A file with this name is already in use here - rename to avoid conflict.
+                        // Chances are, it's a different image (stored in a different folder on the user's computer).
+                        // If the user wants to reuse an existing image, they can copy/paste it within the editor.
+                        file = result.newfile;
+                    }
+
+                    // Replace placeholder with actual image.
+                    newhtml = '<img class="w-100" src="'+file.url+'"/>';
+                    self.editor.execCommand('mceInsertContent', false, newhtml);
+                    self.destroy();
                 }
-            
-        }
+            } else {
+                    //alert(M.util.get_string('servererror', 'moodle'));
+            }
+        };
 
         xhr.open("POST", M.cfg.wwwroot + '/repository/repository_ajax.php?action=upload', true);
         xhr.send(formData);
     }
 
-    close(){
-        this.getDialogue({
-            focusAfterHide: null
-        }).hide();
+    close() {
+        this.destroy();
         this.stopStream();
-        if (this.cropperEl) this.cropperEl.destroy();
+        if (this.cropperEl) {
+            this.cropperEl.destroy();
+        }
         this.shotBlob = null;
         this.cropperEl = null;
     }
     
-    bmpToBlob(img, f){
+    bmpToBlob(img, f) {
       const canvas = document.createElement('canvas');
       // resize it to the size of our ImageBitmap
       canvas.width = img.width;
       canvas.height = img.height;
       // try to get a bitmaprenderer context
       let ctx = canvas.getContext('bitmaprenderer');
-      if(ctx) {
+      if (ctx) {
         // transfer the ImageBitmap to it
         ctx.transferFromImageBitmap(img);
       }
@@ -447,7 +460,7 @@ export class Editor {
       }
       // get it back as a Blob
       var blob = canvas.toBlob(f);
-      canvas.remove()
+      canvas.remove();
       return blob;
     }
 }
