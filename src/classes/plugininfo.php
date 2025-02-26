@@ -48,11 +48,8 @@ class plugininfo extends plugin implements plugin_with_buttons, plugin_with_menu
     ): bool {
         // Disabled if:
         // - Not logged in or guest.
-        // - Files are not allowed.
-        // - Only URL are supported.
-        $canhavefiles = !empty($options['maxfiles']);
-        $canhaveexternalfiles = !empty($options['return_types']) && ($options['return_types'] & FILE_EXTERNAL);
-        return isloggedin() && !isguestuser() && $canhavefiles && $canhaveexternalfiles;
+
+        return isloggedin() && !isguestuser();
     }
 
     public static function get_available_buttons(): array {
@@ -83,8 +80,8 @@ class plugininfo extends plugin implements plugin_with_buttons, plugin_with_menu
             'takephoto',
             'error',
         ),
-    'tiny_recittakepicture');
+        'tiny_recittakepicture');
 
-    return array();
+        return  array();
     }
 }
