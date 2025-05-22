@@ -130,11 +130,13 @@ export class Editor {
             if (typeof ImageCapture !== 'undefined') {
                 const mediaStreamTrack = video.srcObject.getVideoTracks()[0];
                 const imageCapture = new ImageCapture(mediaStreamTrack);
-                imageCapture.grabFrame().then(function(img) {
-                    that.bmpToBlob(img, function(blob) {
-                        that.shotBlob = blob;
+                if (imageCapture && imageCapture.grabFrame){
+                    imageCapture.grabFrame().then(function(img) {
+                        that.bmpToBlob(img, function(blob) {
+                            that.shotBlob = blob;
+                        });
                     });
-                });
+                }
             }
     
             photodata = canvas.toDataURL('image/png');
