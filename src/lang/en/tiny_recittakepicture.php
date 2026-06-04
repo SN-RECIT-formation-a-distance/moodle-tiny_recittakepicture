@@ -22,6 +22,7 @@ $string['back'] = 'Back';
 $string['grantaccess'] = 'Please grant access to your camera';
 $string['uploading'] = 'Uploading';
 
-$string['privacy:metadata'] = 'The atto_recittakepicture plugin does not store any personal data.';
+$string['privacy:metadata'] = 'The tiny_recittakepicture plugin does not store any personal data directly. Photos captured through this tool are uploaded to Moodle\'s standard file system using the current user\'s session and are subject to Moodle\'s own data-retention policies. No image data is transmitted to any third party.';
+$string['cameranotice'] = 'This tool will access your camera to capture a photo. The photo will be saved in the course file system under your account. No image data is sent to third parties.';
 
 $string['error'] = 'An error has occured';

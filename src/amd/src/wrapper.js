@@ -41,9 +41,10 @@ export class Editor {
         
                 
         if (navigator.permissions) {
-            navigator.permissions.query({name: "camera"}).then(function(state) { 
-                if (state == 'prompt') {
-                    this.accessGranted = false; 
+            var permSelf = this;
+            navigator.permissions.query({name: "camera"}).then(function(state) {
+                if (state.state !== 'granted') {
+                    permSelf.accessGranted = false;
                 }
             });
         }
@@ -84,7 +85,17 @@ export class Editor {
                 '</div>' +
             '</form>';
         this.dialogue = this.createPopup(content);
-        
+
+        // Law 25 / privacy transparency: show a non-blocking notice about camera access and file storage.
+        var privacyNotice = document.createElement('div');
+        privacyNotice.className = 'alert alert-info py-1 px-2 mb-2 small';
+        privacyNotice.setAttribute('role', 'note');
+        privacyNotice.textContent = M.util.get_string('cameranotice', this.COMPONENTNAME);
+        var modalBody = this.popup.querySelector('.modal-body');
+        if (modalBody) {
+            modalBody.insertBefore(privacyNotice, modalBody.firstChild);
+        }
+
         // Apple bug: hide Safari navbar so users can see buttons
         if (navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPad/i)) {
             // iOS hides Safari address bar 
@@ -206,7 +217,9 @@ export class Editor {
 
         let header = document.createElement('div');
         header.classList.add('modal-header');
-        header.innerHTML = "<h2>"+M.util.get_string('pluginname', 'tiny_recittakepicture')+"</h2>";
+        const h2 = document.createElement('h2');
+        h2.textContent = M.util.get_string('pluginname', 'tiny_recittakepicture');
+        header.appendChild(h2);
         inner.appendChild(header);
 
         let btn = document.createElement('button');
@@ -315,7 +328,7 @@ export class Editor {
                 that.loadCameraDevices();
             })
             .catch(function(err) {
-                alert(M.util.get_string('error', this.COMPONENTNAME)+": " + err);
+                alert(M.util.get_string('error', that.COMPONENTNAME)+": " + err);
             });
         }
         else{
@@ -399,34 +412,49 @@ export class Editor {
 
         // Kick off a XMLHttpRequest.
         xhr.onreadystatechange = function() {
-            var result,
-                file,
-                newhtml;
-
-            if (xhr.readyState === 4) {
-                if (xhr.status === 200) {
+            if (xhr.readyState !== 4) {
+                return;
+            }
+            if (xhr.status === 200) {
+                var result;
+                try {
                     result = JSON.parse(xhr.responseText);
-                    if (result) {
-                        if (result.error) {
-                            throw new M.core.ajaxException(result);
-                        } 
-                    }
-
-                    file = result;
-                    if (result.event && result.event === 'fileexists') {
-                        // A file with this name is already in use here - rename to avoid conflict.
-                        // Chances are, it's a different image (stored in a different folder on the user's computer).
-                        // If the user wants to reuse an existing image, they can copy/paste it within the editor.
-                        file = result.newfile;
-                    }
-
-                    // Replace placeholder with actual image.
-                    newhtml = '<img class="w-100" src="'+file.url+'"/>';
-                    self.editor.execCommand('mceInsertContent', false, newhtml);
+                } catch (e) {
+                    alert(M.util.get_string('error', self.COMPONENTNAME));
                     self.destroy();
+                    return;
                 }
-            } else {
-                    //alert(M.util.get_string('servererror', 'moodle'));
+
+                if (!result || typeof result !== 'object') {
+                    alert(M.util.get_string('error', self.COMPONENTNAME));
+                    self.destroy();
+                    return;
+                }
+
+                if (result.error) {
+                    throw new M.core.ajaxException(result);
+                }
+
+                var file = result;
+                if (result.event && result.event === 'fileexists') {
+                    // A file with this name is already in use here - rename to avoid conflict.
+                    file = result.newfile;
+                }
+
+                // Validate URL is from this Moodle instance before inserting (IDOR/XSS defence).
+                if (!file || typeof file.url !== 'string' ||
+                    (!file.url.startsWith('/') && !file.url.startsWith(M.cfg.wwwroot))) {
+                    alert(M.util.get_string('error', self.COMPONENTNAME));
+                    self.destroy();
+                    return;
+                }
+
+                // Build img via DOM API so the browser encodes the URL, preventing XSS.
+                var imgEl = document.createElement('img');
+                imgEl.className = 'w-100';
+                imgEl.src = file.url;
+                self.editor.execCommand('mceInsertContent', false, imgEl.outerHTML);
+                self.destroy();
             }
         };
 

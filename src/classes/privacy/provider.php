@@ -17,9 +17,9 @@
 namespace tiny_recittakepicture\privacy;
 
 /**
- * Privacy Subsystem implementation for the htmlbootstrapeditor plugin for TinyMCE.
+ * Privacy Subsystem implementation for the recittakepicture plugin for TinyMCE.
  *
- * @package tiny_htmlbootstrapeditor
+ * @package tiny_recittakepicture
  * @copyright  2019 RECIT
  * @license    {@link http://www.gnu.org/licenses/gpl-3.0.html} GNU GPL v3 or later
  */

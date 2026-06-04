@@ -23,5 +23,6 @@ $string['grantaccess'] = 'Veuillez donner accès à la camera';
 $string['uploading'] = 'Téléversement en cours';
 $string['error'] = 'Une erreur est survenue';
 
-$string['privacy:metadata'] = 'Le atto_recittakepicture plugin ne store pas de données personnelles.';
+$string['privacy:metadata'] = 'Le plugiciel tiny_recittakepicture ne stocke pas directement de données personnelles. Les photos capturées sont téléversées dans le système de fichiers standard de Moodle sous le compte de l\'utilisateur actuel et sont soumises aux politiques de conservation des données de Moodle. Aucune image n\'est transmise à des tiers.';
+$string['cameranotice'] = 'Cet outil accédera à votre caméra pour capturer une photo. La photo sera enregistrée dans le système de fichiers du cours sous votre compte. Aucune donnée d\'image n\'est envoyée à des tiers.';
 
