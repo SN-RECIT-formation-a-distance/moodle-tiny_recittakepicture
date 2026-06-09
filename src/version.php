@@ -24,11 +24,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2026060400;
+$plugin->version   = 2026060401;
 $plugin->requires  = 2024071200.00; // Moodle 4.5.0
 $plugin->component = 'tiny_recittakepicture';
 
-$plugin->release = 'v1.1.0-stable';
+$plugin->release = 'v1.1.1-stable';
 $plugin->supported = [405, 501];      //  Moodle 4.1.x are supported.
 $plugin->maturity = MATURITY_STABLE; // MATURITY_ALPHA, MATURITY_BETA, MATURITY_RC or MATURITY_STABLE
   
